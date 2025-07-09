@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABC
+from abc import abstractmethod, ABC, abstractproperty
 
 
 class AbstractDataset(ABC):
@@ -10,6 +10,26 @@ class AbstractDataset(ABC):
         """
         self._config = config
         self._data = None
+
+    @property
+    @abstractmethod
+    def text_column(self) -> str:
+        """
+        Get the name of the column containing the text data.
+
+        @return: Name of the text column
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def label_column(self) -> str:
+        """
+        Get the name of the column containing the label data.
+
+        @return: Name of the label column
+        """
+        pass
 
     @abstractmethod
     def load_data(self):

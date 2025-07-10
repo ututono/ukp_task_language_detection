@@ -1,4 +1,6 @@
-classifier_type: "svm"
+classifier_type: "naive_bayes"
 
-svm_C: 1.0
-max_iter: 1000
+smoothing_alpha: 1.0
+seed: ${local.seed}
+use_sampling: true
+max_samples: 10000

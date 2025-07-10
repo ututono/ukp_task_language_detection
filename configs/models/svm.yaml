@@ -1,3 +1,9 @@
 classifier_type: "svm"
 
-smoothing_alpha: 1.0
+svm_C: 1.0
+max_iter: 1000
+kernel: "linear"
+class_weight: "balanced"
+seed: ${local.seed}
+use_sampling: true
+max_samples: 10000

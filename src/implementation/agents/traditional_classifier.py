@@ -4,6 +4,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import List, Optional
 from datasets import ClassLabel
+from sklearn.utils import shuffle
 
 from src.core.abstractions.agent import AbstractAgent
 from src.infrastructure.utils.constants import DetectorModelType, DatasetColumns as DSE
@@ -19,17 +20,35 @@ class TraditionalClassifierAgent(AbstractAgent):
         @param config: Configuration object containing agent parameters.
         """
         self._traditional_classifier_type = config.get('traditional_classifier_type', DetectorModelType.SVM)
-        self._smoothing_alpha = config.get('smoothing_alpha', 1.0)
-        self._svm_C = config.get('svm_C', 1.0)
-        self._max_iter = config.get('max_iter', 1000)
+        self._smoothing_alpha = config.get('smoothing_alpha', 1.0)  # Only used for Naive Bayes
+        self._svm_C = config.get('svm_C', 1.0)  # Only used for SVM
+        self._max_iter = config.get('max_iter', 1000)  # Only used for SVM
+        self._kernel = config.get('kernel', 'linear')  # Only used for SVM
+        self._class_weight = config.get('class_weight', None)  # Only used for SVM
+        self._seed = config.get('seed', 42)
+        self._use_sampling = config.get('use_sampling', False)  # Whether to use sampling for imbalanced datasets
+        self._max_samples = config.get('max_samples', 10000)  # Maximum number of samples to use if sampling is enabled
         self._model = None
-        self._class_labels:  ClassLabel = None
+        self._class_labels: ClassLabel = None
         super().__init__(config)
 
     def build_model(self):
         if self._traditional_classifier_type == DetectorModelType.SVM:
-            from sklearn.svm import SVC
-            self._model = SVC(C=self._svm_C, max_iter=self._max_iter, probability=True)
+            from sklearn.svm import SVC, LinearSVC
+            if self._kernel == 'linear':
+                self._model = LinearSVC(
+                    C=self._svm_C,
+                    max_iter=self._max_iter,
+                    class_weight=self._class_weight,
+                    random_state=self._seed,
+                    dual=False,  # more efficient for large datasets
+                )
+            self._model = SVC(
+                C=self._svm_C,
+                max_iter=self._max_iter,
+                random_state=self._seed,
+                probability=True
+            )
         elif self._traditional_classifier_type == DetectorModelType.NAIVE_BAYES:
             from sklearn.naive_bayes import MultinomialNaiveBayes
             self._model = MultinomialNaiveBayes(alpha=self._smoothing_alpha)
@@ -42,6 +61,13 @@ class TraditionalClassifierAgent(AbstractAgent):
 
         X_train, y_train, label_names = train_data[DSE.FEATURES], train_data[DSE.LABEL], train_data[DSE.LABEL_NAMES]
         self._class_labels = ClassLabel(names=label_names)
+
+        if self._use_sampling:
+            X_train, y_train = self._sample_data(X_train, y_train)
+            logger.info(f"Sampled training data shape: {X_train.shape}")
+
+        # shuffle the training data
+        X_train, y_train = shuffle(X_train, y_train, random_state=self._seed)
 
         start_time = time.time()
         logger.info(f"{self._traditional_classifier_type} start training...")
@@ -66,6 +92,17 @@ class TraditionalClassifierAgent(AbstractAgent):
                 label_names
             )
             logger.info(f"Validation results: {val_results}")
+
+    def _sample_data(self, X, y):
+        """
+        Sample a subset of the data if use_sampling is enabled.
+        This is useful for imbalanced datasets to speed up training.
+        """
+        if self._use_sampling and len(X) > self._max_samples:
+            from sklearn.utils import resample
+            logger.info(f"Sampling {self._max_samples} from {len(X)} training samples for faster training")
+            X, y = resample(X, y, n_samples=self._max_samples, random_state=self._seed)
+        return X, y
 
     def _compute_results(self, pred, gold, label_names=None):
         from src.implementation.evaluators.classification_evaluator import LanguageClassificationEvaluator

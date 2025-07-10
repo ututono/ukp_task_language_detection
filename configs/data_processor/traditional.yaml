@@ -3,5 +3,5 @@ method: "traditional"
 feature_extraction_method: "ngram" # Options: "ngram", "tfidf", "word2vec", "fasttext"
 val_ratio: 0.1
 seed: ${local.seed}
-ngram_range: [1, 2]
-max_features: 10000
+ngram_range: [3, 5]
+max_features: 5000

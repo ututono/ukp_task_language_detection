@@ -9,3 +9,6 @@ defaults:
   - models: svm
   - hydra: default
 
+task_name: language_detection
+
+mode: train

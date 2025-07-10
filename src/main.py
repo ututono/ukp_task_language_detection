@@ -1,7 +1,11 @@
+import logging
+
 import hydra
 
 from src.infrastructure.argparser import get_arguments
 from src.infrastructure.loggs.rich_utils import print_config_tree
+
+logger = logging.getLogger(__name__)
 
 
 def train_language_detection(cfg):
@@ -15,20 +19,18 @@ def evaluate_language_detection(cfg):
     pass
 
 
-def main():
-    args = get_arguments()
+@hydra.main(version_base="1.3", config_path="../configs")
+def main(cfg):
+    mode = getattr(cfg, 'mode', 'train')
 
-    if args.mode == "train":
-        config_name = args.config_name or "training"
-        with hydra.initialize(config_path=args.config_path, version_base=None):
-            cfg = hydra.compose(config_name=config_name)
-            train_language_detection(cfg)
-
-    elif args.mode == "evaluate":
-        config_name = args.config_name or "evaluating"
-        with hydra.initialize(config_path=args.config_path, version_base=None):
-            cfg = hydra.compose(config_name=config_name)
-            evaluate_language_detection(cfg)
+    if mode == 'train':
+        logger.info("Starting training process...")
+        train_language_detection(cfg)
+    elif mode == 'evaluate':
+        logger.info("Starting evaluation process...")
+        evaluate_language_detection(cfg)
+    else:
+        raise ValueError(f"Unknown mode: {mode}. Use 'train' or 'evaluate'.")
 
 
 if __name__ == '__main__':

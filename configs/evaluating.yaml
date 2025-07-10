@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - local: default
+  - paths: default
+  - datasets: wili_2018
+  - data_processor: traditional
+  - models: svm
+  - hydra: default
+
+
+task_name: language_detection
+mode: evaluate

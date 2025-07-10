@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any, Dict
 
@@ -6,6 +7,7 @@ from datasets import load_dataset, load_from_disk
 from src.core.abstractions.cusdataset import AbstractDataset
 from src.core.entities.config import DatasetConfig
 
+logger = logging.getLogger(__name__)
 
 class WiLiDataset(AbstractDataset):
     """
@@ -59,6 +61,7 @@ class WiLiDataset(AbstractDataset):
         """
         path = path or self._path
         self._data = self._load_hf_data(path)
+        logger.info(f'Loaded dataset from {path}')
         return self._data
 
     def _load_hf_data(self, path: str) -> Any:

@@ -2,17 +2,9 @@ from abc import abstractmethod, ABC
 
 
 class AbstractTrainer(ABC):
-    def __init__(self, model, dataset, config):
-        """
-        Initialize the trainer with the model, dataset, and configuration.
+    def __init__(self):
+        pass
 
-        @param model: The model to be trained.
-        @param dataset: The dataset to be used for training.
-        @param config: Configuration object containing training parameters.
-        """
-        self._model = model
-        self._dataset = dataset
-        self._config = config
 
     @abstractmethod
     def train(self, *args, **kwargs):

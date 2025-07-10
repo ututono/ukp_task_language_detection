@@ -20,13 +20,14 @@ class TrainingDetectorExperiments:
         """
         Placeholder method to run the language detection experiment.
         """
+        logger.info(f"Start loading data...")
         ProcessorClass = get_processor()
-
         process_config = ProcessorClass.build_config(cfg=self.cfg)
 
         processor: AbstractDataProcessor = ProcessorClass(process_config)
         train_data, val_data, test_data = processor.process_pipeline()
 
+        logger.info(f"Data loaded and processed successfully. Train size: {len(train_data[DSE.TEXT])}, Validation size: {len(val_data[DSE.TEXT])}, Test size: {len(test_data[DSE.TEXT])}")
         TrainerClass = get_trainer()
         trainer: AbstractTrainer = TrainerClass()
 

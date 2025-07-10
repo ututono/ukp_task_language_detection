@@ -98,9 +98,9 @@ class TraditionalClassifierAgent(AbstractAgent):
         Sample a subset of the data if use_sampling is enabled.
         This is useful for imbalanced datasets to speed up training.
         """
-        if self._use_sampling and len(X) > self._max_samples:
+        if self._use_sampling and X.shape[0] > self._max_samples:
             from sklearn.utils import resample
-            logger.info(f"Sampling {self._max_samples} from {len(X)} training samples for faster training")
+            logger.info(f"Sampling {self._max_samples} from { X.shape[0]} training samples for faster training")
             X, y = resample(X, y, n_samples=self._max_samples, random_state=self._seed)
         return X, y
 

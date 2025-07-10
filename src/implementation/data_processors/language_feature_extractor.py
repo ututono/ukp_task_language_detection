@@ -30,16 +30,17 @@ class LanguageFeatureExtractor:
 
         @param texts: List of text samples to fit the vectorizer on.
         """
+        ngram_range = tuple(self._ngram_range)
         if self._method == FET.NGRAM:
             self._vectorizer = CountVectorizer(
                 analyzer='char',
-                ngram_range=self._ngram_range,
+                ngram_range=ngram_range,
                 max_features=self._max_features
             )
         elif self._method == FET.TFIDF:
             self._vectorizer = TfidfVectorizer(
                 analyzer='char',
-                ngram_range=self._ngram_range,
+                ngram_range=ngram_range,
                 max_features=self._max_features
             )
         else:

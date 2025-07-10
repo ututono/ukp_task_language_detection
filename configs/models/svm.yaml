@@ -1,0 +1,3 @@
+classifier_type: "svm"
+
+smoothing_alpha: 1.0

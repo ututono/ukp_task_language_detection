@@ -4,3 +4,8 @@ defaults:
   - _self_
   - local: default
   - paths: default
+  - datasets: wili_2018
+  - data_processor: traditional
+  - models: svm
+  - hydra: default
+

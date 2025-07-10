@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 
-class AbstractAgent(ABC):
+class AbstractModel(ABC):
     def __init__(self, config):
         """
         Initialize the model with the given configuration.

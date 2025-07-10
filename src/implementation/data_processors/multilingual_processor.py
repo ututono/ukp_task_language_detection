@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 
 from src.core.abstractions.data_processor import AbstractDataProcessor
 from src.core.abstractions.cusdataset import AbstractDataset
+from src.core.entities.config import DataProcessorConfig
 from src.implementation.data_processors.language_feature_extractor import LanguageFeatureExtractor
 from src.infrastructure.utils.constants import DatasetColumns as DSC
 from src.implementation.datasets.wili_dataset import WiLiDataset
@@ -37,22 +38,33 @@ class MultilingualDataProcessor(AbstractDataProcessor):
         self._dataset = None
         self._init_dataset()
 
+    @classmethod
+    def build_config(cls, cfg):
+        return DataProcessorConfig(
+            method=cfg.data_processor.method,
+            val_ratio=cfg.data_processor.val_ratio,
+            seed=cfg.data_processor.seed,
+            feature_extraction_method=cfg.data_processor.feature_extraction_method,
+            ngram_range=cfg.data_processor.ngram_range,
+            max_features=cfg.data_processor.max_features,
+            cfg=cfg
+        )
+
     def _init_dataset(self):
         dataset_type = self._config.get('dataset_type', 'wili')
         if dataset_type == 'wili':
-            self._dataset = WiLiDataset(self._config)
+            DatasetClass = WiLiDataset
+            config = DatasetClass.build_config(self._config.cfg)
+            self._dataset = WiLiDataset(config)
         else:
             raise ValueError(f"Unsupported dataset type: {dataset_type}")
 
-
-    def load_raw_data(self, path: str):
+    def load_raw_data(self, path):
         """
         Load the raw dataset.
-
-        @param path: Path to the dataset
         @return: Loaded dataset
         """
-        return self._dataset.load_data()
+        return self._dataset.load_data(path)
 
     def clean_data(self, data):
         """
@@ -61,14 +73,14 @@ class MultilingualDataProcessor(AbstractDataProcessor):
         @param data: Raw data to be cleaned.
         @return: Cleaned data.
         """
+
         def clean(text):
             text = re.sub(r"[\r\n\t]+", " ", text)  # remove line breaks, tabs
-            text = re.sub(r"\s+", " ", text)        # collapse multiple spaces
+            text = re.sub(r"\s+", " ", text)  # collapse multiple spaces
             return text.strip()
 
         # Get the text column name from the dataset
         text_column = self._dataset.text_column
-
         for split in data:
             data[split] = data[split].map(lambda ex: {text_column: clean(ex[text_column])})
         return data
@@ -164,35 +176,3 @@ class MultilingualDataProcessor(AbstractDataProcessor):
             # For deep learning methods, we return the raw text
             return data
 
-
-class WiLiDataProcessor(MultilingualDataProcessor):
-    """
-    Data processor for the WiLi_2018 dataset from HuggingFace.
-    This class is maintained for backward compatibility.
-    It is a specialized version of MultilingualDataProcessor configured for the WiLi dataset.
-    """
-
-    def __init__(self, config):
-        """
-        Initialize the WiLi data processor with the given configuration.
-
-        @param config: Configuration object containing data processing parameters.
-        """
-        # Ensure dataset_type is set to 'wili' and use default column names for backward compatibility
-        config_copy = dict(config)
-        config_copy['dataset_type'] = 'wili'
-        config_copy['text_column'] = config.get('text_column', 'sentence')
-        config_copy['label_column'] = config.get('label_column', 'label')
-        super().__init__(config_copy)
-
-    def _load_hf_data(self, path: str) -> Any:
-        """
-        Load dataset from Hugging Face.
-        Maintained for backward compatibility.
-
-        @param path: Path to the dataset on HuggingFace (e.g., "MartinThoma/wili_2018")
-        @return: Loaded dataset
-        """
-        if self._dataset is None:
-            self._dataset = WiLiDataset(self._config)
-        return self._dataset._load_hf_data(path)

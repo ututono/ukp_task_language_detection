@@ -4,12 +4,23 @@ from typing import Any, Dict
 from datasets import load_dataset, load_from_disk
 
 from src.core.abstractions.cusdataset import AbstractDataset
+from src.core.entities.config import DatasetConfig
 
 
 class WiLiDataset(AbstractDataset):
     """
     Dataset class for the WiLi_2018 dataset from HuggingFace.
     """
+
+    @classmethod
+    def build_config(cls, cfg):
+        return DatasetConfig(
+            dataset_type='wili',
+            dataset_path=cfg.datasets.dataset_path,
+            text_column=cfg.datasets.text_column,
+            label_column=cfg.datasets.label_column,
+            cfg=cfg
+        )
 
     def __init__(self, config):
         """
@@ -40,17 +51,18 @@ class WiLiDataset(AbstractDataset):
         """
         return self._label_column
 
-    def load_data(self):
+    def load_data(self, path=None):
         """
         Load the WiLi_2018 dataset from HuggingFace.
 
         @return: Loaded dataset
         """
-        self._data = self._load_hf_data(self._path)
+        path = path or self._path
+        self._data = self._load_hf_data(path)
         return self._data
 
     def _load_hf_data(self, path: str) -> Any:
-        """ 
+        """
         Load dataset from Hugging Face.
 
         @param path: Path to the dataset on HuggingFace (e.g., "MartinThoma/wili_2018")
@@ -79,3 +91,5 @@ class WiLiDataset(AbstractDataset):
         if self._data is None:
             self.preprocess()
         return self._data
+
+

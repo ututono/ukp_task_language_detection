@@ -1,4 +1,6 @@
 from abc import abstractmethod, ABC
+from os import PathLike
+from typing import Optional
 
 
 class AbstractDataProcessor(ABC):
@@ -69,7 +71,7 @@ class AbstractDataProcessor(ABC):
         # Default implementation can be empty or raise NotImplementedError
         return True
 
-    def process_pipeline(self, path):
+    def process_pipeline(self, path: Optional[PathLike|str] = None):
         """
         Process the data pipeline from loading raw data to preprocessing it.
 
@@ -90,3 +92,40 @@ class AbstractDataProcessor(ABC):
         preprocessed_test_data = self.preprocess_data(test_data)
 
         return preprocessed_train_data, preprocessed_val_data, preprocessed_test_data
+
+    def vectorize_data(self, data):
+        """
+        Vectorize the data using the feature extraction method defined in the configuration.
+        """
+        return data
+
+    @property
+    def data_text_column(self) -> str:
+        """
+        Get the text column name from the dataset.
+
+        @return: Text column name
+        """
+        return self._dataset.text_column if hasattr(self, '_dataset') else self._config.get('text_column', None)
+
+    @property
+    def data_label_column(self) -> str:
+        """
+        Get the label column name from the dataset.
+
+        @return: Label column name
+        """
+        return self._dataset.label_column if hasattr(self, '_dataset') else self._config.get('label_column', None)
+
+    @classmethod
+    @abstractmethod
+    def build_config(cls, **kwargs):
+        """
+        Build a configuration object for the data processor from the hydra configuration.
+
+        This method should be implemented by subclasses to define how the configuration is built.
+
+        @param kwargs: Additional parameters for building the configuration.
+        @return: Configuration object.
+        """
+        pass

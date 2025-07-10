@@ -57,3 +57,14 @@ class AbstractDataset(ABC):
         @return: Processed dataset ready for use.
         """
         pass
+
+    @classmethod
+    @abstractmethod
+    def build_config(cls, cfg):
+        """
+        Build the configuration for the dataset based on the provided configuration object.
+
+        @param cfg: Configuration object containing dataset parameters.
+        @return: Configuration object for the dataset.
+        """
+        pass

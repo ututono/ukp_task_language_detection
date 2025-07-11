@@ -1,0 +1,10 @@
+method: "deep_learning"
+val_ratio: 0.1
+seed: ${local.seed}
+
+# Text encoding parameters
+encoding_type: "char"  # char or word
+vocab_size: 1000
+max_length: 200
+
+num_workers: 12

@@ -31,8 +31,6 @@ class ConfigBase:
         return getattr(self, key, default)
 
 
-
-
 @dataclass
 class DatasetConfig(ConfigBase):
     """
@@ -44,7 +42,6 @@ class DatasetConfig(ConfigBase):
     label_column: str = 'label'
 
     cfg: Optional[dict] = None
-
 
 
 @dataclass
@@ -61,5 +58,35 @@ class DataProcessorConfig(ConfigBase):
 
     cfg: Optional[dict] = None
 
+@dataclass
+class AgentConfig(ConfigBase):
+    model_config: Optional[dict] = None
+    use_sampling: bool = False
+    max_samples: int = 10000
+    device: str = 'cpu'
+    num_workers: int = 4
+    seed: int = 42
+    num_classes: int = 235
+    cfg: Optional[dict] = None
 
 
+class DLModelConfig(ConfigBase):
+    """
+    Configuration class for deep learning models, defining parameters for model architecture and training.
+    """
+    model_type: str = 'CNN'
+    num_classes: int = 235
+    backbone_config: Optional[dict] = None
+    classification_head_config: Optional[dict] = None
+    text_encoder_config: Optional[dict] = None
+    device: str = 'cpu'
+    backbone_output_dim: int = 128  # Redefine this after backbone initialization
+    cfg: Optional[dict] = None
+
+class TextEncoderConfig(ConfigBase):
+    """
+    Configuration class for text encoders, defining parameters for text encoding.
+    """
+    encoding_type: str = 'char'
+    vocab_size: int = 10000
+    max_length: int = 256

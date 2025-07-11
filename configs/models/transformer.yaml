@@ -1,0 +1,26 @@
+classifier_type: "transformer"
+model_type: "transformer"
+
+# Text encoding
+encoding_type: "char"
+vocab_size: 1000
+max_length: 200
+
+# Embedding layer
+embedding_dim: 128
+
+# Transformer parameters
+num_heads: 8
+num_layers: 3
+hidden_dim: 256
+dropout: 0.1
+
+# Training parameters
+learning_rate: 0.001
+batch_size: 32
+epochs: 15
+
+# Classification head
+num_classes: null  # Auto-inferred from data
+
+seed: ${local.seed}

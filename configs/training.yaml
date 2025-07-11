@@ -7,6 +7,7 @@ defaults:
   - datasets: wili_2018
   - data_processor: traditional
   - models: svm
+  - agents: traditional_classifier_agent
   - hydra: default
 
 task_name: language_detection

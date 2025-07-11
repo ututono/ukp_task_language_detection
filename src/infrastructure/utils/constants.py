@@ -44,6 +44,8 @@ class DetectorModelType(TypeEnum):
     CNN = "cnn"
     TRANSFORMER = "transformer"
     SVM = "svm"
+    BERT = "bert"
+    RoBERTa = "roberta"
     NAIVE_BAYES = "naive_bayes"
 
 class DatasetColumns(TypeEnum):

@@ -19,12 +19,24 @@ class AbstractAgent(ABC):
         """
         pass
 
+    @abstractmethod
     def train(self, *args, **kwargs):
         pass
 
     def evaluate(self, *args, **kwargs):
         pass
 
-
+    @abstractmethod
     def predict(self, texts, **kwargs):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def build_config(cls, cfg):
+        """
+        Build the configuration for the agent based on the provided config.
+
+        @param cfg: Configuration object containing agent parameters.
+        @return: Configured parameters for the agent.
+        """
         pass

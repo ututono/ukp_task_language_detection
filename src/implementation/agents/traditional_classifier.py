@@ -7,6 +7,7 @@ from datasets import ClassLabel
 from sklearn.utils import shuffle
 
 from src.core.abstractions.agent import AbstractAgent
+from src.core.entities.config import AgentConfig
 from src.infrastructure.utils.constants import DetectorModelType, DatasetColumns as DSE
 
 logger = logging.getLogger(__name__)
@@ -19,12 +20,13 @@ class TraditionalClassifierAgent(AbstractAgent):
 
         @param config: Configuration object containing agent parameters.
         """
-        self._traditional_classifier_type = config.get('traditional_classifier_type', DetectorModelType.SVM)
-        self._smoothing_alpha = config.get('smoothing_alpha', 1.0)  # Only used for Naive Bayes
-        self._svm_C = config.get('svm_C', 1.0)  # Only used for SVM
-        self._max_iter = config.get('max_iter', 1000)  # Only used for SVM
-        self._kernel = config.get('kernel', 'linear')  # Only used for SVM
-        self._class_weight = config.get('class_weight', None)  # Only used for SVM
+        model_config = config.model_config
+        self._classifier_type = model_config.get('traditional_classifier_type', None)
+        self._smoothing_alpha = model_config.get('smoothing_alpha', None)  # Only used for Naive Bayes
+        self._svm_C = model_config.get('svm_C', None)  # Only used for SVM
+        self._max_iter = model_config.get('max_iter', None)  # Only used for SVM
+        self._kernel = model_config.get('kernel', None)  # Only used for SVM
+        self._class_weight = model_config.get('class_weight', None)  # Only used for SVM
         self._seed = config.get('seed', 42)
         self._use_sampling = config.get('use_sampling', False)  # Whether to use sampling for imbalanced datasets
         self._max_samples = config.get('max_samples', 10000)  # Maximum number of samples to use if sampling is enabled
@@ -32,8 +34,17 @@ class TraditionalClassifierAgent(AbstractAgent):
         self._class_labels: ClassLabel = None
         super().__init__(config)
 
+    @classmethod
+    def build_config(cls, cfg):
+        return AgentConfig(
+            model_config=cfg.models,
+            seed=cfg.agents.seed,
+            use_sampling=cfg.agents.use_sampling,
+            cfg=cfg,
+        )
+
     def build_model(self):
-        if self._traditional_classifier_type == DetectorModelType.SVM:
+        if self._classifier_type == DetectorModelType.SVM:
             from sklearn.svm import SVC, LinearSVC
             if self._kernel == 'linear':
                 self._model = LinearSVC(
@@ -49,11 +60,11 @@ class TraditionalClassifierAgent(AbstractAgent):
                 random_state=self._seed,
                 probability=True
             )
-        elif self._traditional_classifier_type == DetectorModelType.NAIVE_BAYES:
+        elif self._classifier_type == DetectorModelType.NAIVE_BAYES:
             from sklearn.naive_bayes import MultinomialNaiveBayes
             self._model = MultinomialNaiveBayes(alpha=self._smoothing_alpha)
         else:
-            raise ValueError(f"Unsupported traditional classifier type: {self._traditional_classifier_type}")
+            raise ValueError(f"Unsupported traditional classifier type: {self._classifier_type}")
 
     def train(self, train_data, val_data=None):
         if self._model is None:
@@ -70,10 +81,10 @@ class TraditionalClassifierAgent(AbstractAgent):
         X_train, y_train = shuffle(X_train, y_train, random_state=self._seed)
 
         start_time = time.time()
-        logger.info(f"{self._traditional_classifier_type} start training...")
+        logger.info(f"{self._classifier_type} start training...")
         self._model.fit(X_train, y_train)
         elapsed_time = time.time() - start_time
-        logger.info(f"{self._traditional_classifier_type} training completed in {elapsed_time:.2f} seconds.")
+        logger.info(f"{self._classifier_type} training completed in {elapsed_time:.2f} seconds.")
 
         y_train_pred = self._model.predict(X_train)
         train_results = self._compute_results(
@@ -144,7 +155,7 @@ class TraditionalClassifierAgent(AbstractAgent):
     def save_model(self, save_dir):
         save_dir = Path(save_dir)
         save_dir.mkdir(parents=True, exist_ok=True)
-        model_path = save_dir / f"{self._traditional_classifier_type.value}_model.pkl"
+        model_path = save_dir / f"{self._classifier_type.value}_model.pkl"
         import joblib
         joblib.dump(self._model, model_path)
         logger.info(f"Model saved to {model_path}")

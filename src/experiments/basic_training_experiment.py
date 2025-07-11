@@ -22,7 +22,7 @@ class TrainingDetectorExperiments:
         """
         Placeholder method to run the language detection experiment.
         """
-        set_random_seed(self.cfg.seed)
+        set_random_seed(self.cfg.local.seed)
 
         logger.info(f"Start loading data...")
         ProcessorClass = get_processor()

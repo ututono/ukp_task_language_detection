@@ -2,7 +2,6 @@ import logging
 
 import hydra
 
-from src.infrastructure.argparser import get_arguments
 from src.infrastructure.loggs.rich_utils import print_config_tree
 
 logger = logging.getLogger(__name__)

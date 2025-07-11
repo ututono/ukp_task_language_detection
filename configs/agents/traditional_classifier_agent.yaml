@@ -1,3 +1,5 @@
 use_sampling: true
-max_samples: 10000
+max_samples: 1000
 seed: ${local.seed}
+
+verbose: true

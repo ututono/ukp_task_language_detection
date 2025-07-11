@@ -31,7 +31,6 @@ class ConfigBase:
         return getattr(self, key, default)
 
 
-@dataclass
 class DatasetConfig(ConfigBase):
     """
     Configuration class for datasets, defining parameters for dataset loading and processing.
@@ -44,7 +43,6 @@ class DatasetConfig(ConfigBase):
     cfg: Optional[dict] = None
 
 
-@dataclass
 class DataProcessorConfig(ConfigBase):
     """
     Configuration class for data processors, defining parameters for data processing tasks.
@@ -58,7 +56,7 @@ class DataProcessorConfig(ConfigBase):
 
     cfg: Optional[dict] = None
 
-@dataclass
+
 class AgentConfig(ConfigBase):
     model_config: Optional[dict] = None
     use_sampling: bool = False
@@ -67,6 +65,7 @@ class AgentConfig(ConfigBase):
     num_workers: int = 4
     seed: int = 42
     num_classes: int = 235
+    verbose = True
     cfg: Optional[dict] = None
 
 
@@ -82,6 +81,7 @@ class DLModelConfig(ConfigBase):
     device: str = 'cpu'
     backbone_output_dim: int = 128  # Redefine this after backbone initialization
     cfg: Optional[dict] = None
+
 
 class TextEncoderConfig(ConfigBase):
     """

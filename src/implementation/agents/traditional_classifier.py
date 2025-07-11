@@ -21,7 +21,7 @@ class TraditionalClassifierAgent(AbstractAgent):
         @param config: Configuration object containing agent parameters.
         """
         model_config = config.model_config
-        self._classifier_type = model_config.get('traditional_classifier_type', None)
+        self._classifier_type = model_config.get('classifier_type', None)
         self._smoothing_alpha = model_config.get('smoothing_alpha', None)  # Only used for Naive Bayes
         self._svm_C = model_config.get('svm_C', None)  # Only used for SVM
         self._max_iter = model_config.get('max_iter', None)  # Only used for SVM
@@ -29,7 +29,7 @@ class TraditionalClassifierAgent(AbstractAgent):
         self._class_weight = model_config.get('class_weight', None)  # Only used for SVM
         self._seed = config.get('seed', 42)
         self._use_sampling = config.get('use_sampling', False)  # Whether to use sampling for imbalanced datasets
-        self._max_samples = config.get('max_samples', 10000)  # Maximum number of samples to use if sampling is enabled
+        self._max_samples = config.get('max_samples', None)  # Maximum number of samples to use if sampling is enabled
         self._model = None
         self._class_labels: ClassLabel = None
         super().__init__(config)
@@ -40,6 +40,8 @@ class TraditionalClassifierAgent(AbstractAgent):
             model_config=cfg.models,
             seed=cfg.agents.seed,
             use_sampling=cfg.agents.use_sampling,
+            max_samples=cfg.agents.max_samples,
+            verbose=cfg.agents.verbose,
             cfg=cfg,
         )
 
@@ -52,17 +54,22 @@ class TraditionalClassifierAgent(AbstractAgent):
                     max_iter=self._max_iter,
                     class_weight=self._class_weight,
                     random_state=self._seed,
+                    verbose=self._config.verbose,
                     dual=False,  # more efficient for large datasets
                 )
             self._model = SVC(
                 C=self._svm_C,
                 max_iter=self._max_iter,
                 random_state=self._seed,
+                verbose=self._config.verbose,
                 probability=True
             )
         elif self._classifier_type == DetectorModelType.NAIVE_BAYES:
             from sklearn.naive_bayes import MultinomialNaiveBayes
-            self._model = MultinomialNaiveBayes(alpha=self._smoothing_alpha)
+            self._model = MultinomialNaiveBayes(
+                alpha=self._smoothing_alpha,
+                verbose=self._config.verbose,
+            )
         else:
             raise ValueError(f"Unsupported traditional classifier type: {self._classifier_type}")
 
@@ -111,7 +118,7 @@ class TraditionalClassifierAgent(AbstractAgent):
         """
         if self._use_sampling and X.shape[0] > self._max_samples:
             from sklearn.utils import resample
-            logger.info(f"Sampling {self._max_samples} from { X.shape[0]} training samples for faster training")
+            logger.info(f"Sampling {self._max_samples} from {X.shape[0]} training samples for faster training")
             X, y = resample(X, y, n_samples=self._max_samples, random_state=self._seed)
         return X, y
 

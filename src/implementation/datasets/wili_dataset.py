@@ -9,6 +9,7 @@ from src.core.entities.config import DatasetConfig
 
 logger = logging.getLogger(__name__)
 
+
 class WiLiDataset(AbstractDataset):
     """
     Dataset class for the WiLi_2018 dataset from HuggingFace.
@@ -94,5 +95,3 @@ class WiLiDataset(AbstractDataset):
         if self._data is None:
             self.preprocess()
         return self._data
-
-

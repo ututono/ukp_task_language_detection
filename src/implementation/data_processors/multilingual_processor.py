@@ -41,12 +41,12 @@ class MultilingualDataProcessor(AbstractDataProcessor):
     @classmethod
     def build_config(cls, cfg):
         return DataProcessorConfig(
-            method=cfg.data_processor.method,
+            method=cfg.data_processor.get('method', 'traditional'),
             val_ratio=cfg.data_processor.val_ratio,
             seed=cfg.data_processor.seed,
-            feature_extraction_method=cfg.data_processor.feature_extraction_method,
-            ngram_range=cfg.data_processor.ngram_range,
-            max_features=cfg.data_processor.max_features,
+            feature_extraction_method=cfg.data_processor.get("feature_extraction_method", None),
+            ngram_range=cfg.data_processor.get('ngram_range', None),
+            max_features=cfg.data_processor.get('max_features', None),
             cfg=cfg
         )
 

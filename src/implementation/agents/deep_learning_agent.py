@@ -38,9 +38,9 @@ class DeepLearningClassifierAgent(AbstractAgent):
     def build_config(cls, cfg):
         return AgentConfig(
             model_config=cfg.get('models', None),
-            device=cfg.get('local', {}).get('device', None),
-            num_workers=cfg.get('num_workers', 8),
-            seed=cfg.get('seed', 42),
+            device=cfg.local.device,
+            num_workers=cfg.local.num_workers,
+            seed=cfg.local.seed,
             num_classes=cfg.datasets.get('num_classes', None),
             cfg=cfg,
         )
@@ -54,7 +54,8 @@ class DeepLearningClassifierAgent(AbstractAgent):
         self._optimizer = optim.Adam(self._model.parameters(), lr=self._lr)
         self._criterion = nn.CrossEntropyLoss()
 
-        logger.info(f"Built {self._model_type} model with {sum(p.numel() for p in self._model.parameters())} parameters")
+        logger.info(
+            f"Built {self._model_type} model with {sum(p.numel() for p in self._model.parameters())} parameters")
 
     def _create_dataloader(self, x, y=None):
         from torch.utils.data import DataLoader, TensorDataset
@@ -64,11 +65,11 @@ class DeepLearningClassifierAgent(AbstractAgent):
             dataset = TensorDataset(x)
         return DataLoader(dataset, batch_size=self._batch_size, shuffle=True, num_workers=self._num_workers)
 
-    def create_dataloader(self, data):
+    def create_dataloader(self, data: dict):
         texts = data.get(DSC.TEXT, None)
         labels = torch.tensor(data[DSC.LABEL], dtype=torch.long)
         label_names = data.get(DSC.LABEL_NAMES, None)
-        if self._class_labels is not None:
+        if self._class_labels is None:
             self._class_labels = ClassLabel(names=label_names)
 
         self._num_classes = len(label_names)
@@ -186,5 +187,27 @@ class DeepLearningClassifierAgent(AbstractAgent):
 
         return states
 
-    def predict(self, texts, **kwargs):
-        self.create_dataloader()
+    def predict(self, texts, return_labels=True, **kwargs):
+        """
+        Predict the class labels for the given texts.
+        :param texts:
+        :param return_labels: return class labels (str) if True, otherwise return raw predictions (digits)
+        :param kwargs:
+        :return:
+        """
+        encoded_texts = self._model.encode_texts(texts)
+        dataloader = self._create_dataloader(encoded_texts)
+
+        predictions = []
+
+        self._model.eval()
+        with torch.no_grad():
+            for batch in dataloader:
+                texts = batch[0].to(self._device)
+                outputs = self._model(texts)
+                _, predicted = torch.max(outputs, 1)
+                predictions.extend(predicted.cpu().numpy().tolist())
+        if return_labels and self._class_labels is not None:
+            predictions = [self._class_labels.int2str(label) for label in predictions]
+
+        return predictions

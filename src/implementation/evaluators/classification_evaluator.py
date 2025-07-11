@@ -42,6 +42,8 @@ class LanguageClassificationEvaluator(AbstractEvaluator):
     def evaluate(self, predictions: List[str], ground_truth: List[str]) -> Dict[str, Any]:
         """
         Compute standard classification metrics and confusion matrix
+
+        TODO should be able to handle both string and integer labels
         """
         if len(predictions) != len(ground_truth):
             raise ValueError("Predictions and ground truth must have the same length")

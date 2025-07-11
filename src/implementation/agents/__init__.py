@@ -11,6 +11,7 @@ DEEPLEARNING_AGENTS = [
     DMT.LSTM.value,
     DMT.TRANSFORMER.value,
     DMT.BERT.value,
+    DMT.CNN.value,
 ]
 
 

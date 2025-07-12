@@ -1,10 +1,10 @@
+
+defaults:
+  - tokenizer: custom
+
+
 classifier_type: "cnn"
 model_type: "cnn"
-
-# Text encoding
-encoding_type: "char"
-vocab_size: 1000
-max_length: 200
 
 # Embedding layer
 embedding_dim: 64

@@ -50,6 +50,7 @@ class BasicTrainer(AbstractTrainer):
         results = evaluator.evaluate(predictions, y_test_str)
 
         logger.info("Training and evaluation completed.")
+        logger.info(f"Training completed with results on the test data split: {results}")
 
     def evaluate(
             self,

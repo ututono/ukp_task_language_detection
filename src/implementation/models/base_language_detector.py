@@ -25,9 +25,7 @@ class BaseDeepLearningLanguageDetector(nn.Module, AbstractModel):
             backbone_config=model_config,
             num_classes=config.get('num_classes', 235),
             model_type=model_config.get('model_type', None),
-            encoding_type=model_config.get('encoding_type', None),
-            vocab_size=model_config.get('vocab_size', None),
-            max_length=model_config.get('max_length', None),
+            tokeinizer_config=config.get('tokenizer_config', None),
             device=cfg.local.get('device', 'cpu') if cfg else 'cpu',
             cfg=cfg,
         )
@@ -52,7 +50,7 @@ class BaseDeepLearningLanguageDetector(nn.Module, AbstractModel):
 
     def _build_text_encoder(self, config):
         from src.implementation.models.components.text_encoder import TextEncoder
-        text_encoder_config = TextEncoder.build_config(config)
+        text_encoder_config = TextEncoder.build_config(config.tokeinizer_config)
         return TextEncoder(text_encoder_config)
 
     def _build_backbone(self, config):

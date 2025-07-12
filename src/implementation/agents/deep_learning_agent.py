@@ -38,6 +38,7 @@ class DeepLearningClassifierAgent(AbstractAgent):
     def build_config(cls, cfg):
         return AgentConfig(
             model_config=cfg.get('models', None),
+            tokenizer_config=cfg.tokenizer,
             device=cfg.local.device,
             num_workers=cfg.local.num_workers,
             seed=cfg.local.seed,
@@ -86,6 +87,7 @@ class DeepLearningClassifierAgent(AbstractAgent):
         total_loss = 0.0
         correct = 0
         total = 0
+        self._model.to(self._device)
 
         for batch in data_loader:
             texts, labels = batch
@@ -110,6 +112,7 @@ class DeepLearningClassifierAgent(AbstractAgent):
 
     def _perform_validation_step(self, epoch, data_loader, criterion, matrics):
         self._model.eval()
+        self._model.to(self._device)
         total_loss = 0.0
         correct = 0
         total = 0

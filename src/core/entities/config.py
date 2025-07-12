@@ -59,6 +59,7 @@ class DataProcessorConfig(ConfigBase):
 
 class AgentConfig(ConfigBase):
     model_config: Optional[dict] = None
+    tokenizer_config: Optional[dict] = None
     use_sampling: bool = False
     max_samples: int = 10000
     device: str = 'cpu'

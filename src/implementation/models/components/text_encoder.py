@@ -1,3 +1,5 @@
+import logging
+
 import torch
 import torch.nn as nn
 from typing import List, Dict, Union
@@ -6,8 +8,119 @@ import re
 
 from src.core.entities.config import TextEncoderConfig
 
+logger = logging.getLogger(__name__)
+
 
 class TextEncoder:
+    """Unified text encoder supporting multiple backends"""
+
+    def __init__(self, config: TextEncoderConfig):
+        if config.get('encoder_type', None) == 'custom':
+            self.encoder = CustomTextEncoder(config)
+        elif config.get('encoder_type',  None) == 'huggingface':
+            self.encoder = HuggingFaceTextEncoder(config)
+        else:
+            raise ValueError(f"Unsupported encoder type: {config.get('encoder_type', None)}")
+
+    @classmethod
+    def build_config(cls, config: Dict[str, Union[str, int]]) -> TextEncoderConfig:
+        """Build configuration for TextEncoder"""
+        return TextEncoderConfig(
+            encoder_type=config.get('encoder_type', 'custom'),
+            encoding_type=config.get('encoding_type', 'char'),
+            vocab_size=config.get('vocab_size', 1000),
+            max_length=config.get('max_length', 200),
+            model_name=config.get('model_name', 'bert-base-multilingual-cased'),
+            use_fast_tokenizer=config.get('use_fast_tokenizer', True),
+            cfg=config.get('cfg', None)
+        )
+
+    def build_vocab(self, texts: List[str]) -> int:
+        """Build vocabulary from training texts"""
+        return self.encoder.build_vocab(texts)
+
+    def encode_texts(self, texts: List[str]) -> torch.Tensor:
+        """Convert texts to numerical sequences"""
+        return self.encoder.encode_texts(texts)
+
+    def get_vocab_size(self) -> int:
+        """Get actual vocabulary size"""
+        return self.encoder.get_vocab_size()
+
+
+class HuggingFaceTextEncoder:
+    """HuggingFace transformers-based text encoder"""
+
+    def __init__(self, config: TextEncoderConfig):
+        try:
+            from transformers import AutoTokenizer
+        except ImportError:
+            raise ImportError("transformers library not found. Install with: pip install transformers")
+
+        # Configuration
+        self.model_name = config.get('model_name', 'bert-base-multilingual-cased')
+        self.use_fast = config.get('use_fast_tokenizer', True)
+        self.max_length = config.get('max_length', 200)
+
+        # Initialize tokenizer
+        self.vocab_built = True  # Pretrained tokenizers have built vocabularies
+        self._init_tokenizer()
+
+        logger.info(f"Initialized HuggingFace encoder with {self.model_name}")
+
+    def _init_tokenizer(self):
+        """Initialize the HuggingFace tokenizer"""
+        from transformers import AutoTokenizer
+
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_name,
+                use_fast=self.use_fast,
+                model_max_length=self.max_length
+            )
+
+            # Ensure pad token exists
+            if self.tokenizer.pad_token is None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token or '[PAD]'
+
+        except Exception as e:
+            logger.warning(f"Failed to load {self.model_name}, falling back to bert-base-multilingual-cased")
+            self.model_name = 'bert-base-multilingual-cased'
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_name,
+                use_fast=self.use_fast,
+                model_max_length=self.max_length
+            )
+
+    def build_vocab(self, texts: List[str]) -> int:
+        """Build vocabulary (no-op for pretrained tokenizers)"""
+        self.vocab_built = True
+        logger.info(f"Using pretrained vocabulary with {len(self.tokenizer)} tokens")
+        return len(self.tokenizer)
+
+    def encode_texts(self, texts: List[str]) -> torch.Tensor:
+        """Encode texts using HuggingFace tokenizer"""
+        if not self.vocab_built:
+            logger.warning("Vocabulary not built, building automatically")
+            self.build_vocab(texts)
+
+        # Tokenize and encode
+        encoded = self.tokenizer(
+            texts,
+            padding=True,
+            truncation=True,
+            max_length=self.max_length,
+            return_tensors='pt'
+        )
+
+        return encoded['input_ids']
+
+    def get_vocab_size(self) -> int:
+        """Get vocabulary size"""
+        return len(self.tokenizer)
+
+
+class CustomTextEncoder:
     """Unified text encoder supporting both character and word level encoding"""
 
     def __init__(self, config):

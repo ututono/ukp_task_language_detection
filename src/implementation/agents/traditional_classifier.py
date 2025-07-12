@@ -38,6 +38,7 @@ class TraditionalClassifierAgent(AbstractAgent):
     def build_config(cls, cfg):
         return AgentConfig(
             model_config=cfg.models,
+            tokenizer_config=cfg.tokenizer,
             seed=cfg.agents.seed,
             use_sampling=cfg.agents.use_sampling,
             max_samples=cfg.agents.max_samples,

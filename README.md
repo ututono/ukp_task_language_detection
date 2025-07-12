@@ -30,6 +30,7 @@ src/
 │   └── utils/              # Genearl utilities
 ├── config/                 # Configuration files
 
+```
 
 ## Setup
 ### Install the required packages:

@@ -1,0 +1,3 @@
+seed: ${local.seed}
+num_workers: ${local.num_workers}
+device: ${local.device}

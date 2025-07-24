@@ -1,0 +1,23 @@
+
+defaults:
+  - tokenizer: custom
+
+
+classifier_type: "cnn"
+model_type: "cnn"
+
+# Embedding layer
+embedding_dim: 64
+
+# CNN parameters
+num_filters: [100, 100, 100]  # Number of filters for each kernel size
+kernel_sizes: [3, 4, 5]       # Multi-scale convolution kernels
+dropout: 0.3
+
+# Training parameters
+learning_rate: 0.001
+batch_size: 128
+epochs: 15
+
+# Classification head
+num_classes: null  # Auto-inferred from data

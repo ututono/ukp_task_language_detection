@@ -1,0 +1,6 @@
+classifier_type: "naive_bayes"
+
+smoothing_alpha: 1.0
+seed: ${local.seed}
+use_sampling: true
+max_samples: 10000

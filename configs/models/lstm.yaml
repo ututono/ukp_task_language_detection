@@ -1,0 +1,19 @@
+defaults:
+  - tokenizer: custom
+
+classifier_type: "lstm"
+model_type: "lstm"
+
+# Embedding layer
+embedding_dim: 64
+
+# LSTM parameters
+hidden_dim: 256
+num_layers: 2
+bidirectional: true
+dropout: 0.2
+
+# Training parameters
+learning_rate: 0.001
+batch_size: 256
+epochs: 5

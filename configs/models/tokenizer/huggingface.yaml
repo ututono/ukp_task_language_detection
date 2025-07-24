@@ -1,0 +1,5 @@
+# @package tokenizer
+encoder_type: "huggingface"
+model_name: "bert-base-multilingual-cased"
+use_fast_tokenizer: true
+max_length: 200
